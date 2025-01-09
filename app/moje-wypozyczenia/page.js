@@ -67,7 +67,6 @@ export default function MyLoans() {
 
   if (loading) return <div>Ładowanie wypożyczeń...</div>;
   if (error) return <div>Błąd: {error}</div>;
-  if (!filteredLoans.length) return <div>Nie masz żadnych wypożyczeń</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -103,31 +102,35 @@ export default function MyLoans() {
 
       {/* Lista wypożyczeń */}
       <ul className="space-y-4">
-        {filteredLoans.map((loan) => (
-          <li
-            key={loan._id}
-            className="bg-white shadow-md rounded-lg p-6 flex items-center justify-between"
-          >
-            <div>
-              <h3 className="text-2xl font-semibold text-[#5b3d44]">{loan.ksiazka_id.tytul}</h3>
-              <p className="text-[#6b4f33] italic">Autor: {loan.ksiazka_id.autor}</p>
-              <p className="text-[#6b4f33]">Status: {loan.status}</p>
-              <p className="text-[#6b4f33]">
-                Data wypożyczenia: {new Date(loan.data_wypozyczenia).toLocaleDateString()}
-              </p>
-            </div>
+        {filteredLoans.length === 0 ? (
+          <div>Nie masz żadnych wypożyczeń w tej kategorii.</div>
+        ) : (
+          filteredLoans.map((loan) => (
+            <li
+              key={loan._id}
+              className="bg-white shadow-md rounded-lg p-6 flex items-center justify-between"
+            >
+              <div>
+                <h3 className="text-2xl font-semibold text-[#5b3d44]">{loan.ksiazka_id.tytul}</h3>
+                <p className="text-[#6b4f33] italic">Autor: {loan.ksiazka_id.autor}</p>
+                <p className="text-[#6b4f33]">Status: {loan.status}</p>
+                <p className="text-[#6b4f33]">
+                  Data wypożyczenia: {new Date(loan.data_wypozyczenia).toLocaleDateString()}
+                </p>
+              </div>
 
-            {/* Przyciski do akcji dla zatwierdzonych wypożyczeń */}
-            {loan.status === "zatwierdzone" && (
-              <button
-                onClick={() => handleReturnBook(loan._id)}
-                className="bg-blue-500 text-white px-4 py-2 rounded"
-              >
-                Oddaj
-              </button>
-            )}
-          </li>
-        ))}
+              {/* Przyciski do akcji dla zatwierdzonych wypożyczeń */}
+              {loan.status === "zatwierdzone" && (
+                <button
+                  onClick={() => handleReturnBook(loan._id)}
+                  className="bg-blue-500 text-white px-4 py-2 rounded"
+                >
+                  Oddaj
+                </button>
+              )}
+            </li>
+          ))
+        )}
       </ul>
     </div>
   );
