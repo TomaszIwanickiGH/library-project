@@ -10,7 +10,7 @@ const BookDetails = () => {
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   useEffect(() => {
     const fetchBook = async () => {
       try {
@@ -55,7 +55,7 @@ const BookDetails = () => {
       console.log("Rozpoczęto wypożyczanie...");
       console.log("Książka ID:", book._id);
       console.log("Wypożyczający:", session.user.email);
-  
+
       const response = await fetch("/api/loan", {
         method: "POST",
         headers: {
@@ -66,14 +66,14 @@ const BookDetails = () => {
           wypozyczajacy: session.user.email, // E-mail użytkownika
         }),
       });
-  
+
       if (!response.ok) {
         const errorData = await response.json();
         console.error("Błąd serwera:", errorData);
         alert(`Błąd podczas wypożyczania książki: ${errorData.message}`);
         return;
       }
-  
+
       const data = await response.json();
       alert("Książka została wypożyczona!");
     } catch (error) {
@@ -81,7 +81,7 @@ const BookDetails = () => {
       alert("Nie udało się połączyć z serwerem.");
     }
   };
-  
+
   if (loading) return <div>Ładowanie książki...</div>;
   if (error) return <div>Błąd: {error}</div>;
 
@@ -98,6 +98,11 @@ const BookDetails = () => {
           alt={book.tytul}
           className="w-full h-96 object-cover rounded-lg mb-4"
         />
+
+        {/* Wyświetlanie ilości książek */}
+        <p className="text-[#6b4f33] italic mb-4">
+          Ilość dostępnych książek: {book.ilosc}
+        </p>
 
         {/* Tytuł książki */}
         <h3 className="text-2xl font-semibold text-[#5b3d44] mb-2">{book.tytul}</h3>
@@ -120,13 +125,19 @@ const BookDetails = () => {
         {/* Opis książki */}
         <p className="mb-8">{book.opis || "Brak opisu"}</p>
 
-        {/* Przycisk do wypożyczenia książki */}
-        <button
-          onClick={handleBorrowBook}
-          className="w-full py-3 bg-[#4e9a73] text-white text-lg font-semibold rounded-lg hover:bg-[#38745b] transition duration-300"
-        >
-          Wypożycz książkę
-        </button>
+        {/* Komunikat o braku książek i zablokowanie przycisku */}
+        {book.ilosc > 0 ? (
+          <button
+            onClick={handleBorrowBook}
+            className="w-full py-3 bg-[#4e9a73] text-white text-lg font-semibold rounded-lg hover:bg-[#38745b] transition duration-300"
+          >
+            Wypożycz książkę
+          </button>
+        ) : (
+          <div className="w-full py-3 bg-gray-300 text-white text-lg font-semibold rounded-lg text-center">
+            Brak dostępnych książek
+          </div>
+        )}
 
         {/* Przycisk do usunięcia książki, widoczny tylko dla admina */}
         {session && session.user.email === "admin@admin.pl" && (

@@ -11,6 +11,7 @@ export default function AddBook() {
   const [opis, setOpis] = useState("");
   const [autor, setAutor] = useState("");
   const [obraz, setObraz] = useState("");
+  const [ilosc, setIlosc] = useState(0);  // Dodajemy stan dla ilości książek
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
 
@@ -26,8 +27,8 @@ export default function AddBook() {
     event.preventDefault();
 
     // Sprawdzenie poprawności formularza
-    if (!tytul || !gatunek || !rok_wydania || !autor) {
-      setError("Wszystkie pola są wymagane.");
+    if (!tytul || !gatunek || !rok_wydania || !autor || ilosc < 1) {
+      setError("Wszystkie pola są wymagane, a ilość książek musi być większa niż 0.");
       return;
     }
 
@@ -44,6 +45,7 @@ export default function AddBook() {
           opis,
           autor,
           obraz,
+          ilosc,  // Przesyłamy ilość książek do API
         }),
       });
 
@@ -59,6 +61,7 @@ export default function AddBook() {
         setOpis("");
         setAutor("");
         setObraz("");
+        setIlosc(0);  // Resetowanie ilości
       } else {
         setError(data.message || "Wystąpił błąd podczas dodawania książki.");
       }
@@ -141,6 +144,18 @@ export default function AddBook() {
             className="w-full p-2 border rounded-lg"
           />
         </div>
+        <div>
+          <label htmlFor="ilosc" className="block font-medium">Ilość książek</label>
+          <input
+            type="number"
+            id="ilosc"
+            value={ilosc}
+            onChange={(e) => setIlosc(e.target.value)}
+            required
+            min="1"
+            className="w-full p-2 border rounded-lg"
+          />
+        </div>
         <button
           type="submit"
           className="w-full bg-blue-500 text-white p-2 rounded-lg"
@@ -151,4 +166,3 @@ export default function AddBook() {
     </div>
   );
 }
-

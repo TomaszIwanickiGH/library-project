@@ -43,7 +43,7 @@ export default function MyLoans() {
   const handleReturnBook = async (loanId) => {
     try {
       const response = await fetch(`/api/my-loans/${loanId}`, {
-        method: "DELETE",  // Zmieniamy metodę na DELETE, żeby usunąć wypożyczenie
+        method: "DELETE", // DELETE służy do zwrotu wypożyczenia
         headers: {
           "Content-Type": "application/json",
         },
@@ -62,6 +62,32 @@ export default function MyLoans() {
     } catch (err) {
       console.error("Błąd podczas oddawania książki:", err);
       alert("Wystąpił błąd podczas oddawania książki.");
+    }
+  };
+
+  // Funkcja obsługująca anulowanie wypożyczenia
+  const handleCancelLoan = async (loanId) => {
+    try {
+      const response = await fetch(`/api/my-loans/${loanId}`, {
+        method: "DELETE", // DELETE służy również do anulowania wypożyczenia
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Błąd podczas anulowania wypożyczenia:", errorData);
+        alert(`Błąd: ${errorData.message}`);
+        return;
+      }
+
+      // Usuwamy wypożyczenie z lokalnego stanu
+      setLoans((prevLoans) => prevLoans.filter((loan) => loan._id !== loanId));
+      alert("Wypożyczenie zostało anulowane.");
+    } catch (err) {
+      console.error("Błąd podczas anulowania wypożyczenia:", err);
+      alert("Wystąpił błąd podczas anulowania wypożyczenia.");
     }
   };
 
@@ -119,13 +145,21 @@ export default function MyLoans() {
                 </p>
               </div>
 
-              {/* Przyciski do akcji dla zatwierdzonych wypożyczeń */}
+              {/* Przyciski do akcji */}
               {loan.status === "zatwierdzone" && (
                 <button
                   onClick={() => handleReturnBook(loan._id)}
                   className="bg-blue-500 text-white px-4 py-2 rounded"
                 >
                   Oddaj
+                </button>
+              )}
+              {loan.status === "czeka na zatwierdzenie" && (
+                <button
+                  onClick={() => handleCancelLoan(loan._id)}
+                  className="bg-red-500 text-white px-4 py-2 rounded"
+                >
+                  Anuluj
                 </button>
               )}
             </li>

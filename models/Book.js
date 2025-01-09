@@ -5,12 +5,12 @@ const bookSchema = new mongoose.Schema({
   tytul: {
     type: String,
     required: true, // Tytuł książki jest wymagany
-    maxlength: 255,  // Maksymalna długość tytułu
+    maxlength: 255, // Maksymalna długość tytułu
   },
   gatunek: {
     type: String,
     required: true, // Gatunek książki jest wymagany
-    maxlength: 100,  // Maksymalna długość gatunku
+    maxlength: 100, // Maksymalna długość gatunku
   },
   rok_wydania: {
     type: Number,
@@ -23,11 +23,16 @@ const bookSchema = new mongoose.Schema({
   autor: {
     type: String,
     required: true, // Autor książki jest wymagany
-    maxlength: 255,  // Maksymalna długość dla autora
+    maxlength: 255, // Maksymalna długość dla autora
   },
   obraz: {
-    type: String,  // Link do obrazu książki
+    type: String, // Link do obrazu książki
     required: false, // Opcjonalne pole
+  },
+  ilosc: {
+    type: Number, // Liczba dostępnych egzemplarzy
+    required: true, // Ilość książek jest wymagana
+    min: 0, // Minimalna wartość to 0
   }
 });
 

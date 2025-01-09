@@ -1,4 +1,5 @@
 import Loan from "../../../models/Loan";
+import Book from "../../../models/Book";  // Dodajemy import modelu Book
 import connectToDatabase from "../../../lib/mongodb";
 
 export default async function handler(req, res) {
@@ -19,6 +20,28 @@ export default async function handler(req, res) {
       // Zmieniamy status wypożyczenia na zatwierdzone lub odrzucone w zależności od akcji
       const status = action === "approve" ? "zatwierdzone" : "odrzucone";
 
+      // Znalezienie wypożyczenia po ID
+      const loan = await Loan.findById(loanId).populate("ksiazka_id");  // Zakładając, że ksiazka_id to referencja do kolekcji książek
+
+      if (!loan) {
+        return res.status(404).json({ message: "Nie znaleziono wypożyczenia" });
+      }
+
+      // Jeśli akcja to 'approve', zmniejszamy ilość książki o 1
+      if (action === "approve") {
+        const book = loan.ksiazka_id;  // Pobieramy książkę powiązaną z wypożyczeniem
+
+        // Sprawdzamy, czy książka ma dostępne egzemplarze
+        if (book.ilosc <= 0) {
+          return res.status(400).json({ message: "Brak dostępnych książek do wypożyczenia" });
+        }
+
+        // Zmniejszamy ilość książki
+        book.ilosc -= 1;
+        await book.save();  // Zapisujemy zmienioną książkę
+      }
+
+      // Zaktualizowanie statusu wypożyczenia
       const updatedLoan = await Loan.findByIdAndUpdate(
         loanId,
         { status },
@@ -29,7 +52,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ message: "Nie znaleziono wypożyczenia" });
       }
 
-      return res.status(200).json({ message: `Wypożyczenie ${status}d!`, loan: updatedLoan });
+      return res.status(200).json({ message: `Wypożyczenie ${status}!`, loan: updatedLoan });
     } catch (error) {
       console.error("Błąd podczas zatwierdzania lub odrzucania wypożyczenia:", error);
       return res.status(500).json({ message: "Błąd podczas zatwierdzania lub odrzucania wypożyczenia", error: error.message });
