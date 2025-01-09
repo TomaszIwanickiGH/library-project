@@ -11,7 +11,7 @@ export default async function handler(req, res) {
       const session = await getSession({ req });
 
       // Sprawdź, czy użytkownik jest administratorem
-      if (!session || session.user.email !== "admin@admin.pl") {
+      if (!session) {
         return res.status(403).json({ message: "Brak uprawnień" });
       }
 
