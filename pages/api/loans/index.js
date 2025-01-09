@@ -9,6 +9,7 @@ export default async function handler(req, res) {
 
       // Pobierz sesję użytkownika (zakładając, że używasz next-auth)
       const session = await getSession({ req });
+      console.log("Sesja w API:", session);
 
       // Sprawdź, czy użytkownik jest administratorem
       if (!session) {

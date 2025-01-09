@@ -8,6 +8,7 @@ export default function MyLoans() {
   const [loans, setLoans] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [statusFilter, setStatusFilter] = useState("all");
 
   useEffect(() => {
     const fetchLoans = async () => {
@@ -32,15 +33,77 @@ export default function MyLoans() {
     fetchLoans();
   }, [session]);
 
+  // Filtrowanie wypożyczeń na podstawie statusu
+  const filteredLoans = loans.filter((loan) => {
+    if (statusFilter === "all") return true;
+    return loan.status.toLowerCase() === statusFilter;
+  });
+
+  // Funkcja obsługująca usuwanie wypożyczenia
+  const handleReturnBook = async (loanId) => {
+    try {
+      const response = await fetch(`/api/my-loans/${loanId}`, {
+        method: "DELETE",  // Zmieniamy metodę na DELETE, żeby usunąć wypożyczenie
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error("Błąd podczas oddawania książki:", errorData);
+        alert(`Błąd: ${errorData.message}`);
+        return;
+      }
+
+      // Usuwamy wypożyczenie z lokalnego stanu
+      setLoans((prevLoans) => prevLoans.filter((loan) => loan._id !== loanId));
+      alert("Książka została zwrócona i usunięta.");
+    } catch (err) {
+      console.error("Błąd podczas oddawania książki:", err);
+      alert("Wystąpił błąd podczas oddawania książki.");
+    }
+  };
+
   if (loading) return <div>Ładowanie wypożyczeń...</div>;
   if (error) return <div>Błąd: {error}</div>;
-  if (!loans.length) return <div>Nie masz żadnych wypożyczeń</div>;
+  if (!filteredLoans.length) return <div>Nie masz żadnych wypożyczeń</div>;
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       <h2 className="text-3xl font-semibold text-[#6b4f33] mb-8">Moje wypożyczenia</h2>
+
+      {/* Zakładki do filtrowania */}
+      <div className="mb-6">
+        <button
+          onClick={() => setStatusFilter("all")}
+          className={`mr-4 px-4 py-2 rounded ${statusFilter === "all" ? "bg-[#4e9a73] text-white" : "bg-white text-[#4e9a73] border border-[#4e9a73]"}`}
+        >
+          Wszystkie
+        </button>
+        <button
+          onClick={() => setStatusFilter("zatwierdzone")}
+          className={`mr-4 px-4 py-2 rounded ${statusFilter === "zatwierdzone" ? "bg-[#4e9a73] text-white" : "bg-white text-[#4e9a73] border border-[#4e9a73]"}`}
+        >
+          Zatwierdzone
+        </button>
+        <button
+          onClick={() => setStatusFilter("odrzucone")}
+          className={`mr-4 px-4 py-2 rounded ${statusFilter === "odrzucone" ? "bg-[#4e9a73] text-white" : "bg-white text-[#4e9a73] border border-[#4e9a73]"}`}
+        >
+          Odrzucone
+        </button>
+        <button
+          onClick={() => setStatusFilter("czeka na zatwierdzenie")}
+          className={`mr-4 px-4 py-2 rounded ${statusFilter === "czeka na zatwierdzenie" ? "bg-[#4e9a73] text-white" : "bg-white text-[#4e9a73] border border-[#4e9a73]"}`}
+        >
+          Czeka na zatwierdzenie
+        </button>
+      </div>
+
+      {/* Lista wypożyczeń */}
       <ul className="space-y-4">
-        {loans.map((loan) => (
+        {filteredLoans.map((loan) => (
           <li
             key={loan._id}
             className="bg-white shadow-md rounded-lg p-6 flex items-center justify-between"
@@ -53,9 +116,19 @@ export default function MyLoans() {
                 Data wypożyczenia: {new Date(loan.data_wypozyczenia).toLocaleDateString()}
               </p>
             </div>
+
+            {/* Przyciski do akcji dla zatwierdzonych wypożyczeń */}
+            {loan.status === "zatwierdzone" && (
+              <button
+                onClick={() => handleReturnBook(loan._id)}
+                className="bg-blue-500 text-white px-4 py-2 rounded"
+              >
+                Oddaj
+              </button>
+            )}
           </li>
         ))}
       </ul>
     </div>
   );
-};
+}
